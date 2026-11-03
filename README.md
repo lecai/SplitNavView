@@ -1,17 +1,23 @@
 # Split navigation experiments
 
-This repository contains two small UIKit prototypes to compare against a custom split controller that manually moves view controllers between navigation stacks.
+This repository compares adaptive native split navigation with a single-stack alternative.
 
-## Option 1 — Native split with independent navigation stacks
+## Adaptive split (recommended for dual-screen/foldable and regular phones)
 
-`Sources/NativeSplit/NativeSplitViewController.swift` keeps one `UINavigationController` in each column and leaves collapse/expand to UIKit. Do not copy the custom stack migration, snapshots, or deferred-operation machinery from the original implementation. Use `showDetailViewController(_:sender:)` to present or replace detail content.
+`Sources/NativeSplit/NativeSplitViewController.swift` uses a `.doubleColumn` `UISplitViewController` with one navigation controller per column. It sets `.automatic` display mode and lets UIKit adapt to the available window size:
 
-This is the closest behavioral match to a two-column iPad interface. Verify the app's desired compact-mode back behavior on its minimum supported iOS version before adopting it.
+- A narrow phone window uses the collapsed presentation.
+- A wide/unfolded device or sufficiently wide app window can display both columns.
+- On iPad, Stage Manager and system multitasking change the app window size; UIKit adapts the app's internal columns without controlling system multitasking.
 
-## Option 2 — One navigation stack
+The implementation intentionally has no custom collapse/expand delegate, trait override, VC stack migration, transition snapshots, or deferred navigation queue. Use `showDetail(_:animated:)` for presenting a selected detail so UIKit can adapt it to the current layout. Use `pushDetail` only for navigation within the already existing secondary stack.
 
-`Sources/SingleStack/SingleStackCoordinator.swift` demonstrates a single `UINavigationController` stack. Detail pages are pushed onto that stack; it intentionally does not provide simultaneous side-by-side columns. This is the simpler choice when preserving one predictable back stack is more important than a two-column expanded layout.
+The split adapts to available width, not a hard-coded model name. Test on the minimum supported iOS version and on actual narrow/wide window sizes. `UISplitViewController`'s `isCollapsed` is the authoritative current state.
+
+## Single-stack fallback
+
+`Sources/SingleStack/SingleStackCoordinator.swift` demonstrates one `UINavigationController` stack. It is the simplest option when the interface should always have one back stack and never needs simultaneous side-by-side columns.
 
 ## Integration
 
-These are standalone starting points, not a drop-in replacement for `ZMUISplitViewController`: the original source depends on project-specific protocols, `ZMNavigationController`, and `iOSAdditions`, none of which are present in this newly created repository. Add the source to an iOS app target, connect real screen controllers, and run the project's supported-device/iOS test matrix before shipping.
+These are standalone starting points, not a drop-in replacement for `ZMUISplitViewController`: that source depends on project-specific protocols, `ZMNavigationController`, and `iOSAdditions`, which are not present in this repository. Add the source to an iOS app target, connect real screen controllers, and run the supported iOS/device matrix before shipping.
