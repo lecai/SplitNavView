@@ -10,7 +10,7 @@ This repository compares adaptive native split navigation with a single-stack al
 - A wide/unfolded device or sufficiently wide app window can display both columns.
 - On iPad, Stage Manager and system multitasking change the app window size; UIKit adapts the app's internal columns without controlling system multitasking.
 
-The implementation intentionally has no custom collapse/expand delegate, trait override, VC stack migration, transition snapshots, or deferred navigation queue. Use `showDetail(_:animated:)` for presenting a selected detail so UIKit can adapt it to the current layout. Use `pushDetail` only for navigation within the already existing secondary stack.
+The implementation intentionally has no custom collapse/expand delegate, trait override, VC stack migration, transition snapshots, or deferred navigation queue. Use `showDetail(_:)` for presenting a selected detail so UIKit can adapt it to the current layout. Use `pushDetail` only for navigation within the already existing secondary stack. To pop, call `pop(_:)` with the currently visible page; it pops the navigation controller that actually owns that page, including when UIKit has adapted the detail into the primary stack. Popping a root is intentionally a no-op; closing a root detail should be modeled as a separate product action.
 
 The split adapts to available width, not a hard-coded model name. Test on the minimum supported iOS version and on actual narrow/wide window sizes. `UISplitViewController`'s `isCollapsed` is the authoritative current state.
 

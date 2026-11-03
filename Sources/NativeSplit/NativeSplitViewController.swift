@@ -28,9 +28,7 @@ final class NativeSplitViewController: UISplitViewController {
 
     /// Show detail through UISplitViewController's adaptation path.
     /// UIKit displays it in the secondary column when there is room and adapts it when collapsed.
-    func showDetail(_ viewController: UIViewController, animated: Bool = true) {
-        // Use the split's presentation API rather than moving the controller between nav stacks.
-        // The API has no animation parameter; UIKit chooses the transition for the current layout.
+    func showDetail(_ viewController: UIViewController) {
         showDetailViewController(viewController, sender: self)
     }
 
@@ -43,6 +41,20 @@ final class NativeSplitViewController: UISplitViewController {
     /// newly selected detail from the primary column so UIKit can adapt it in compact layouts.
     func pushDetail(_ viewController: UIViewController, animated: Bool = true) {
         secondaryNavigationController.pushViewController(viewController, animated: animated)
+    }
+
+    /// Pops the navigation controller that actually owns the supplied page.
+    /// Pass the currently visible page; this also works when UIKit has adapted detail into the
+    /// primary navigation stack in a collapsed layout. Returns nil when the page is a root or is
+    /// not the current top page. Closing a root detail is a separate product-level action.
+    @discardableResult
+    func pop(_ viewController: UIViewController, animated: Bool = true) -> UIViewController? {
+        guard let navigationController = viewController.navigationController,
+              navigationController.topViewController === viewController,
+              navigationController.viewControllers.count > 1 else {
+            return nil
+        }
+        return navigationController.popViewController(animated: animated)
     }
 
     /// Exposed for callers that need to make presentation decisions; this is UIKit's current
